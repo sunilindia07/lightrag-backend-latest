@@ -31,6 +31,7 @@ A powerful **document ingestion and knowledge-graph service** for LightRAG with 
 - [Verification](#-verification)
 - [Database Schema](#-database-schema)
 - [Troubleshooting](#-troubleshooting)
+- [Documentation](#-documentation)
 
 ## 🚀 Quick Start
 
@@ -551,17 +552,29 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [pgvector](https://github.com/pgvector/pgvector) - Vector similarity search
 - [Apache AGE](https://age.apache.org/) - Graph database extension
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[PostgreSQL Setup](docs/POSTGRESQL_SETUP.md)** - Database installation and configuration
+- **[Environment Variables](docs/ENVIRONMENT_VARIABLES.md)** - Complete configuration reference
+- **[Verification Guide](docs/VERIFICATION_SUMMARY.md)** - Testing and verification
+- **[Database Queries](docs/QUICK_DATABASE_QUERIES.sql)** - SQL queries for inspection
+- **[Verification Report](docs/PDF_PROCESSING_VERIFICATION_REPORT.md)** - Detailed system report
+
 ## 📞 Support
 
 For issues and questions:
 - Open an issue on GitHub
-- Check existing documentation
+- Check the [documentation](docs/)
 - Review verification reports
+- Run `python verify_pdf_storage.py`
 
 ## 🔗 Links
 
 - **Repository:** https://github.com/sunilindia07/lightrag-backend-latest
-- **Documentation:** See `/docs` endpoint when server is running
+- **Documentation:** [`docs/`](docs/) directory
+- **API Docs:** See `/docs` endpoint when server is running
 - **Issues:** https://github.com/sunilindia07/lightrag-backend-latest/issues
 
 ---
