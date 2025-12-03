@@ -1,0 +1,94 @@
+wsl -l -v
+
+wsl -d Ubuntu
+
+sudo apt update && sudo apt upgrade -y
+
+sudo apt install -y \
+  build-essential \
+  libreadline-dev \
+  zlib1g-dev \
+  flex \
+  bison \
+  libxml2-dev \
+  libxslt1-dev \
+  libssl-dev \
+  libpam0g-dev \
+  libedit-dev \
+  libperl-dev \
+  llvm \
+  clang \
+  pkg-config \
+  git \
+  wget
+
+sudo apt install -y postgresql postgresql-contrib
+
+sudo service postgresql start
+sudo systemctl enable PostgreSQL
+
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
+cd ~
+git clone https://github.com/apache/age.git
+cd age
+# for PG14, use appropriate branch/tag if needed
+# e.g., main usually supports multiple PG versions
+
+make PG_CONFIG=/usr/bin/pg_config
+sudo make PG_CONFIG=/usr/bin/pg_config install
+
+sudo apt update
+sudo apt install -y wget ca-certificates gnupg
+
+# Add PGDG repo for Ubuntu 22.04 (jammy). If you are on a different release, adjust 'jammy'.
+echo "deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" | \
+  sudo tee /etc/apt/sources.list.d/pgdg.list
+
+wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+
+sudo apt update
+sudo apt install -y postgresql-16 postgresql-server-dev-16
+
+/usr/lib/postgresql/16/bin/pg_config --version
+
+sudo pg_createcluster 16 main --start
+
+sudo -u postgres /usr/lib/postgresql/16/bin/psql -p 5433
+
+CREATE EXTENSION IF NOT EXISTS age;
+LOAD 'age';
+SET search_path = ag_catalog, "$user", public;
+SELECT create_graph('lightrag_graph');
+
+-- 1) Create database
+CREATE DATABASE airag;
+
+-- 2) Connect to the new database
+\c airag
+
+-- 3) Install and load AGE in this database
+CREATE EXTENSION IF NOT EXISTS age;
+LOAD 'age';
+
+-- 4) Set search_path so cypher() works without schema prefix
+SET search_path = ag_catalog, "$user", public;
+
+-- 5) Create a graph inside airag (name it as you like)
+SELECT create_graph('lightrag_graph');
+
+SELECT * FROM cypher('lightrag_graph', $$
+  CREATE (n:TestNode {name: 'airag_ok'})
+  RETURN n
+$$) AS (n agtype);
+
+sudo pg_ctlcluster 15 main stop
+sudo pg_ctlcluster 16 main stop   # only if it's online
+
+sudo apt update
+sudo apt install -y postgresql-16-pgvector
+
+# As your normal user
+psql -h localhost -p 5433 -U postgres -d airag
