@@ -11,13 +11,17 @@ from datetime import datetime
 import asyncpg
 from typing import Dict, List, Any
 
-# Database connection parameters
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# Database connection parameters from environment variables
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5433,
-    "user": "postgres",
-    "password": "postgres",
-    "database": "airag"
+    "host": os.getenv("POSTGRES_HOST", "localhost"),
+    "port": int(os.getenv("POSTGRES_PORT", "5432")),
+    "user": os.getenv("POSTGRES_USER", "postgres"),
+    "password": os.getenv("POSTGRES_PASSWORD", "postgres"),
+    "database": os.getenv("POSTGRES_DATABASE", "postgres")
 }
 
 async def check_database_connection():

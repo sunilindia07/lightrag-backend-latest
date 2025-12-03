@@ -1,9 +1,12 @@
 -- ============================================
 -- Quick Database Queries for PDF Verification
--- Database: airag @ localhost:5433
+-- Database: ${POSTGRES_DATABASE} @ ${POSTGRES_HOST}:${POSTGRES_PORT}
 -- ============================================
 
 -- Connect to database:
+-- psql -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}
+-- 
+-- Default values (if not using environment variables):
 -- psql -h localhost -p 5433 -U postgres -d airag
 
 -- ============================================

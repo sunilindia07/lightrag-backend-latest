@@ -63,11 +63,11 @@ LOAD 'age';
 SET search_path = ag_catalog, "$user", public;
 SELECT create_graph('lightrag_graph');
 
--- 1) Create database
-CREATE DATABASE airag;
+-- 1) Create database (use your POSTGRES_DATABASE value from .env)
+CREATE DATABASE airag;  -- Change 'airag' to your database name, should match environment variable
 
 -- 2) Connect to the new database
-\c airag
+\c airag  -- Change 'airag' to your database name, should match environment variable
 
 -- 3) Install and load AGE in this database
 CREATE EXTENSION IF NOT EXISTS age;
@@ -90,5 +90,17 @@ sudo pg_ctlcluster 16 main stop   # only if it's online
 sudo apt update
 sudo apt install -y postgresql-16-pgvector
 
-# As your normal user
+# As your normal user (use values from your .env file)
+# Replace with your actual values: POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_DATABASE
 psql -h localhost -p 5433 -U postgres -d airag
+
+# ============================================
+# IMPORTANT: Environment Variables
+# ============================================
+# After setup, configure your .env file with these values:
+# POSTGRES_HOST=localhost
+# POSTGRES_PORT=5433
+# POSTGRES_USER=postgres
+# POSTGRES_PASSWORD=postgres
+# POSTGRES_DATABASE=airag
+# POSTGRES_WORKSPACE=default
