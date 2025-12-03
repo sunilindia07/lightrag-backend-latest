@@ -62,12 +62,22 @@ cp .env.example .env
 
 ### Database Setup
 
-Follow the instructions in `postgresSQL_setup.txt` to set up PostgreSQL with required extensions.
+Follow the instructions in [`docs/POSTGRESQL_SETUP.md`](docs/POSTGRESQL_SETUP.md) to set up PostgreSQL with required extensions.
 
 ```bash
 # Quick setup (from WSL)
 sudo service postgresql start
 psql -h localhost -p 5433 -U postgres -d airag
+```
+
+### Configure Azure OpenAI
+
+The system is configured to use **Azure OpenAI** by default. See [`docs/AZURE_OPENAI_SETUP.md`](docs/AZURE_OPENAI_SETUP.md) for detailed setup instructions.
+
+```bash
+# Update .env with your Azure OpenAI credentials
+cp .env.example .env
+nano .env
 ```
 
 ### Run the Server
@@ -557,6 +567,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 - **[PostgreSQL Setup](docs/POSTGRESQL_SETUP.md)** - Database installation and configuration
+- **[Azure OpenAI Setup](docs/AZURE_OPENAI_SETUP.md)** - Azure OpenAI configuration and migration
 - **[Environment Variables](docs/ENVIRONMENT_VARIABLES.md)** - Complete configuration reference
 - **[Verification Guide](docs/VERIFICATION_SUMMARY.md)** - Testing and verification
 - **[Database Queries](docs/QUICK_DATABASE_QUERIES.sql)** - SQL queries for inspection

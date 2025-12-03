@@ -12,6 +12,12 @@ This directory contains comprehensive documentation for the LightRAG backend sys
   - Apache AGE installation
   - Database creation and configuration
 
+- **[AZURE_OPENAI_SETUP.md](AZURE_OPENAI_SETUP.md)** - Azure OpenAI configuration guide
+  - Azure OpenAI setup and deployment
+  - LLM and embedding configuration
+  - Migration from Ollama
+  - Cost optimization and troubleshooting
+
 - **[ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)** - Environment variables reference
   - Complete list of all configuration options
   - Database connection settings
@@ -48,9 +54,10 @@ This directory contains comprehensive documentation for the LightRAG backend sys
 ## 🚀 Quick Start
 
 1. **Setup Database:** Follow [POSTGRESQL_SETUP.md](POSTGRESQL_SETUP.md)
-2. **Configure Environment:** See [ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)
-3. **Verify Installation:** Use [VERIFICATION_SUMMARY.md](VERIFICATION_SUMMARY.md)
-4. **Inspect Database:** Run queries from [QUICK_DATABASE_QUERIES.sql](QUICK_DATABASE_QUERIES.sql)
+2. **Configure Azure OpenAI:** See [AZURE_OPENAI_SETUP.md](AZURE_OPENAI_SETUP.md)
+3. **Configure Environment:** See [ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)
+4. **Verify Installation:** Use [VERIFICATION_SUMMARY.md](VERIFICATION_SUMMARY.md)
+5. **Inspect Database:** Run queries from [QUICK_DATABASE_QUERIES.sql](QUICK_DATABASE_QUERIES.sql)
 
 ## 📖 Main Documentation
 
