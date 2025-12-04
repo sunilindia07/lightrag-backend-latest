@@ -136,16 +136,16 @@ class LightRAG:
     # Storage
     # ---
 
-    kv_storage: str = field(default="JsonKVStorage")
+    kv_storage: str = field(default="PGKVStorage")
     """Storage backend for key-value data."""
 
-    vector_storage: str = field(default="NanoVectorDBStorage")
+    vector_storage: str = field(default="PGVectorStorage")
     """Storage backend for vector embeddings."""
 
     graph_storage: str = field(default="NetworkXStorage")
     """Storage backend for knowledge graphs."""
 
-    doc_status_storage: str = field(default="JsonDocStatusStorage")
+    doc_status_storage: str = field(default="PGDocStatusStorage")
     """Storage type for tracking document processing statuses."""
 
     # Workspace
