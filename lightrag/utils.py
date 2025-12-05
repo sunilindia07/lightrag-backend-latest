@@ -3019,3 +3019,210 @@ def generate_reference_list_from_chunks(
         reference_list.append({"reference_id": str(i + 1), "file_path": file_path})
 
     return reference_list, updated_chunks
+
+
+# ============================================================================
+# Configuration Validation
+# ============================================================================
+
+
+class ConfigurationError(Exception):
+    """Raised when configuration is invalid or missing"""
+    pass
+
+
+def validate_azure_openai_config() -> tuple[bool, list[str]]:
+    """
+    Validate Azure OpenAI configuration for both LLM and Embedding
+    
+    Returns:
+        Tuple of (is_valid, list_of_errors)
+    """
+    errors = []
+    
+    # Check LLM configuration
+    llm_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT") or os.getenv("LLM_BINDING_HOST")
+    llm_api_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("LLM_BINDING_API_KEY")
+    llm_api_version = os.getenv("AZURE_OPENAI_API_VERSION") or os.getenv("OPENAI_API_VERSION")
+    
+    if not llm_endpoint:
+        errors.append(
+            "❌ Azure OpenAI LLM endpoint not configured. "
+            "Set AZURE_OPENAI_ENDPOINT or LLM_BINDING_HOST"
+        )
+    elif not llm_endpoint.startswith(("http://", "https://")):
+        errors.append(
+            f"❌ Invalid LLM endpoint format: {llm_endpoint}. "
+            "Must start with http:// or https://"
+        )
+    
+    if not llm_api_key:
+        errors.append(
+            "❌ Azure OpenAI LLM API key not configured. "
+            "Set AZURE_OPENAI_API_KEY or LLM_BINDING_API_KEY"
+        )
+    
+    if not llm_api_version:
+        errors.append(
+            "❌ Azure OpenAI API version not configured. "
+            "Set AZURE_OPENAI_API_VERSION or OPENAI_API_VERSION"
+        )
+    
+    # Check Embedding configuration
+    embedding_endpoint = (
+        os.getenv("AZURE_EMBEDDING_ENDPOINT") or os.getenv("EMBEDDING_BINDING_HOST")
+    )
+    embedding_api_key = (
+        os.getenv("AZURE_EMBEDDING_API_KEY") or os.getenv("EMBEDDING_BINDING_API_KEY")
+    )
+    embedding_api_version = (
+        os.getenv("AZURE_EMBEDDING_API_VERSION") or os.getenv("OPENAI_API_VERSION")
+    )
+    
+    if not embedding_endpoint:
+        errors.append(
+            "❌ Azure OpenAI Embedding endpoint not configured. "
+            "Set AZURE_EMBEDDING_ENDPOINT or EMBEDDING_BINDING_HOST"
+        )
+    elif not embedding_endpoint.startswith(("http://", "https://")):
+        errors.append(
+            f"❌ Invalid Embedding endpoint format: {embedding_endpoint}. "
+            "Must start with http:// or https://"
+        )
+    
+    if not embedding_api_key:
+        errors.append(
+            "❌ Azure OpenAI Embedding API key not configured. "
+            "Set AZURE_EMBEDDING_API_KEY or EMBEDDING_BINDING_API_KEY"
+        )
+    
+    if not embedding_api_version:
+        errors.append(
+            "❌ Azure OpenAI Embedding API version not configured. "
+            "Set AZURE_EMBEDDING_API_VERSION or OPENAI_API_VERSION"
+        )
+    
+    return len(errors) == 0, errors
+
+
+def validate_database_config() -> tuple[bool, list[str]]:
+    """
+    Validate PostgreSQL database configuration
+    
+    Returns:
+        Tuple of (is_valid, list_of_errors)
+    """
+    errors = []
+    
+    required_vars = {
+        "POSTGRES_HOST": os.getenv("POSTGRES_HOST"),
+        "POSTGRES_PORT": os.getenv("POSTGRES_PORT"),
+        "POSTGRES_USER": os.getenv("POSTGRES_USER"),
+        "POSTGRES_PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "POSTGRES_DATABASE": os.getenv("POSTGRES_DATABASE"),
+    }
+    
+    for var_name, var_value in required_vars.items():
+        if not var_value:
+            errors.append(f"❌ {var_name} not configured")
+    
+    return len(errors) == 0, errors
+
+
+def validate_configuration(binding: str = None) -> dict[str, Any]:
+    """
+    Validate all required configuration based on the binding type
+    
+    Args:
+        binding: The LLM/Embedding binding type (e.g., 'azure_openai', 'ollama')
+    
+    Returns:
+        Dictionary with validation results
+    """
+    if binding is None:
+        binding = os.getenv("LLM_BINDING", "azure_openai")
+    
+    results = {
+        "valid": True,
+        "errors": [],
+        "warnings": []
+    }
+    
+    # Check if .env file exists
+    if not os.path.exists(".env"):
+        results["warnings"].append(
+            "⚠️  No .env file found. Copy .env.example to .env and configure it."
+        )
+    
+    # Validate database configuration
+    db_valid, db_errors = validate_database_config()
+    if not db_valid:
+        results["valid"] = False
+        results["errors"].extend(db_errors)
+    
+    # Validate binding-specific configuration
+    if binding == "azure_openai":
+        azure_valid, azure_errors = validate_azure_openai_config()
+        if not azure_valid:
+            results["valid"] = False
+            results["errors"].extend(azure_errors)
+    
+    return results
+
+
+def print_configuration_report(results: dict[str, Any]) -> bool:
+    """
+    Print a formatted configuration validation report
+    
+    Returns:
+        True if configuration is valid, False otherwise
+    """
+    print("\n" + "=" * 70)
+    print("🔍 CONFIGURATION VALIDATION REPORT")
+    print("=" * 70)
+    
+    if results["warnings"]:
+        print("\n⚠️  WARNINGS:")
+        for warning in results["warnings"]:
+            print(f"  {warning}")
+    
+    if results["errors"]:
+        print("\n❌ ERRORS:")
+        for error in results["errors"]:
+            print(f"  {error}")
+        
+        print("\n" + "=" * 70)
+        print("📝 SETUP INSTRUCTIONS:")
+        print("=" * 70)
+        print("\n1. Copy .env.example to .env:")
+        print("   cp .env.example .env")
+        print("\n2. Edit .env and configure the following:")
+        print("   - Azure OpenAI endpoints and API keys")
+        print("   - PostgreSQL database credentials")
+        print("   - Other required settings")
+        print("\n3. Example Azure OpenAI configuration:")
+        print("   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/")
+        print("   AZURE_OPENAI_API_KEY=your_api_key_here")
+        print("   AZURE_OPENAI_API_VERSION=2024-02-15-preview")
+        print("\n4. Restart the application after configuration")
+        print("=" * 70 + "\n")
+    else:
+        print("\n✅ All configuration checks passed!")
+        print("=" * 70 + "\n")
+    
+    return results["valid"]
+
+
+def validate_and_exit_on_error():
+    """
+    Validate configuration and exit if invalid
+    Should be called at application startup
+    """
+    binding = os.getenv("LLM_BINDING", "azure_openai")
+    results = validate_configuration(binding)
+    
+    if not print_configuration_report(results):
+        logger.error("Configuration validation failed. Please fix the errors above.")
+        raise ConfigurationError(
+            "Invalid configuration. Please check the errors above and update your .env file."
+        )

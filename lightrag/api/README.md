@@ -552,3 +552,62 @@ This endpoint provides comprehensive status information including:
 * Content summary and metadata
 * Error messages if processing failed
 * Timestamps for creation and updates
+
+## Troubleshooting
+
+### Common Configuration Errors
+
+#### Error: "getaddrinfo failed" or "APIConnectionError: Connection error"
+
+**Cause**: Azure OpenAI endpoints are not configured or have invalid format.
+
+**Solution**:
+1. Ensure `.env` file exists (copy from `.env.example`)
+2. Set required Azure OpenAI variables:
+   ```env
+   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_OPENAI_API_KEY=your_actual_api_key
+   AZURE_EMBEDDING_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_EMBEDDING_API_KEY=your_actual_api_key
+   ```
+3. Verify endpoints start with `https://` and are valid URLs
+4. Run configuration check: `python check_config.py`
+
+#### Error: "Azure OpenAI endpoint is not configured"
+
+**Cause**: Required environment variables are missing.
+
+**Solution**: Set the following in your `.env` file:
+- `AZURE_OPENAI_ENDPOINT` or `LLM_BINDING_HOST`
+- `AZURE_EMBEDDING_ENDPOINT` or `EMBEDDING_BINDING_HOST`
+- `AZURE_OPENAI_API_KEY` or `LLM_BINDING_API_KEY`
+- `AZURE_EMBEDDING_API_KEY` or `EMBEDDING_BINDING_API_KEY`
+- `AZURE_OPENAI_API_VERSION` or `OPENAI_API_VERSION`
+
+#### PDF Processing or Vector Embedding Failures
+
+**Cause**: Configuration issues preventing document processing.
+
+**Solution**:
+1. Verify Azure OpenAI configuration is correct
+2. Check database connection settings
+3. Run `python verify_pdf_storage.py` to diagnose issues
+4. Review server logs for detailed error messages
+
+### Configuration Validation
+
+Before starting the server, validate your configuration:
+
+```bash
+python check_config.py
+```
+
+This will check all required settings and provide clear feedback on any issues.
+
+### Quick Setup Guide
+
+For detailed setup instructions, see:
+- `SETUP_GUIDE.md` - Comprehensive setup documentation
+- `QUICK_FIX.md` - Quick reference for common issues
+- `FIXES_APPLIED.md` - Technical details on recent fixes
+- `.env.example` - All available configuration options

@@ -65,6 +65,34 @@ async def azure_openai_complete_if_cache(
         or os.getenv("OPENAI_API_VERSION")
     )
 
+    # Validate required configuration
+    if not base_url:
+        raise ValueError(
+            "Azure OpenAI LLM endpoint is not configured. "
+            "Please set AZURE_OPENAI_ENDPOINT or LLM_BINDING_HOST in your .env file. "
+            "Example: AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/"
+        )
+    
+    if not api_key:
+        raise ValueError(
+            "Azure OpenAI LLM API key is not configured. "
+            "Please set AZURE_OPENAI_API_KEY or LLM_BINDING_API_KEY in your .env file."
+        )
+    
+    if not api_version:
+        raise ValueError(
+            "Azure OpenAI API version is not configured. "
+            "Please set AZURE_OPENAI_API_VERSION or OPENAI_API_VERSION in your .env file. "
+            "Example: AZURE_OPENAI_API_VERSION=2024-02-15-preview"
+        )
+    
+    # Validate endpoint format
+    if not base_url.startswith(("http://", "https://")):
+        raise ValueError(
+            f"Invalid Azure OpenAI endpoint format: {base_url}. "
+            "Endpoint must start with http:// or https://"
+        )
+
     kwargs.pop("hashing_kv", None)
     kwargs.pop("keyword_extraction", None)
     timeout = kwargs.pop("timeout", None)
@@ -164,14 +192,49 @@ async def azure_openai_embed(
         or os.getenv("OPENAI_API_VERSION")
     )
 
-    openai_async_client = AsyncAzureOpenAI(
-        azure_endpoint=base_url,
-        azure_deployment=deployment,
-        api_key=api_key,
-        api_version=api_version,
-    )
+    # Validate required configuration
+    if not base_url:
+        raise ValueError(
+            "Azure OpenAI embedding endpoint is not configured. "
+            "Please set AZURE_EMBEDDING_ENDPOINT or EMBEDDING_BINDING_HOST in your .env file. "
+            "Example: AZURE_EMBEDDING_ENDPOINT=https://your-resource-name.openai.azure.com/"
+        )
+    
+    if not api_key:
+        raise ValueError(
+            "Azure OpenAI embedding API key is not configured. "
+            "Please set AZURE_EMBEDDING_API_KEY or EMBEDDING_BINDING_API_KEY in your .env file."
+        )
+    
+    if not api_version:
+        raise ValueError(
+            "Azure OpenAI API version is not configured. "
+            "Please set AZURE_EMBEDDING_API_VERSION or OPENAI_API_VERSION in your .env file. "
+            "Example: AZURE_EMBEDDING_API_VERSION=2024-02-15-preview"
+        )
+    
+    # Validate endpoint format
+    if not base_url.startswith(("http://", "https://")):
+        raise ValueError(
+            f"Invalid Azure OpenAI endpoint format: {base_url}. "
+            "Endpoint must start with http:// or https://"
+        )
 
-    response = await openai_async_client.embeddings.create(
-        model=model, input=texts, encoding_format="float"
-    )
-    return np.array([dp.embedding for dp in response.data])
+    try:
+        openai_async_client = AsyncAzureOpenAI(
+            azure_endpoint=base_url,
+            azure_deployment=deployment,
+            api_key=api_key,
+            api_version=api_version,
+        )
+
+        response = await openai_async_client.embeddings.create(
+            model=model, input=texts, encoding_format="float"
+        )
+        return np.array([dp.embedding for dp in response.data])
+    except APIConnectionError as e:
+        logger.error(
+            f"Failed to connect to Azure OpenAI endpoint: {base_url}. "
+            f"Please verify your AZURE_EMBEDDING_ENDPOINT configuration. Error: {e}"
+        )
+        raise
