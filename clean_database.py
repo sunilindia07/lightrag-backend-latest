@@ -196,7 +196,12 @@ async def confirm_cleanup(mode='truncate'):
     print("Host:", DB_CONFIG['host'])
     print("Port:", DB_CONFIG['port'])
     
-    response = input("\nType 'YES' (in capitals) to confirm: ")
+    print("\n" + "-" * 70)
+    print("To proceed: Type 'YES' (in all capitals) and press Enter")
+    print("To cancel:  Type anything else or press Ctrl+C")
+    print("-" * 70)
+    
+    response = input("\nYour choice: ")
     return response == "YES"
 
 

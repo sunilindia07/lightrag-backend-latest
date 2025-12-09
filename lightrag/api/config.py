@@ -60,13 +60,12 @@ class DefaultRAGStorageConfig:
 
 def get_default_host(binding_type: str) -> str:
     default_hosts = {
-        "ollama": os.getenv("LLM_BINDING_HOST", "http://localhost:11434"),
-        "lollms": os.getenv("LLM_BINDING_HOST", "http://localhost:9600"),
-        "azure_openai": os.getenv("AZURE_OPENAI_ENDPOINT", "https://api.openai.com/v1"),
-        "openai": os.getenv("LLM_BINDING_HOST", "https://api.openai.com/v1"),
+        "ollama": os.getenv("LLM_BINDING_HOST"),
+        "azure_openai": os.getenv("AZURE_OPENAI_ENDPOINT"),
+        "openai": os.getenv("LLM_BINDING_HOST"),
     }
     return default_hosts.get(
-        binding_type, os.getenv("LLM_BINDING_HOST", "http://localhost:11434")
+        binding_type, os.getenv("LLM_BINDING_HOST")
     )  # fallback to ollama if unknown
 
 
