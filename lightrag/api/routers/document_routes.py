@@ -1198,17 +1198,41 @@ async def pipeline_enqueue_file(
                             preprocess_result = await _run_pdf_preprocess(str(file_path), cleanup=False)
                             
                             if preprocess_result.get("success"):
-                                # Read the generated markdown file
+                                # Get the generated markdown file
                                 md_file = preprocess_result.get("markdown_file")
                                 if md_file and Path(md_file).exists():
-                                    async with aiofiles.open(md_file, "r", encoding="utf-8") as f:
+                                    # Copy markdown to input directory with same base name
+                                    md_filename = file_path.stem + "_preprocessed.md"
+                                    md_destination = file_path.parent / md_filename
+                                    
+                                    # Copy the markdown file
+                                    shutil.copy2(md_file, md_destination)
+                                    
+                                    # Read the markdown content
+                                    async with aiofiles.open(md_destination, "r", encoding="utf-8") as f:
                                         content = await f.read()
-                                    logger.info(f"Successfully preprocessed PDF with {len(preprocess_result.get('metadata', {}).get('images', []))} images and {len(preprocess_result.get('metadata', {}).get('tables', []))} tables")
+                                    
+                                    # Update file_path to point to markdown file for tracking
+                                    # This ensures the pipeline processes the markdown, not the PDF
+                                    original_pdf_path = file_path
+                                    file_path = md_destination
+                                    
+                                    logger.info(f"✅ Successfully preprocessed PDF: {original_pdf_path.name} → {md_filename}")
+                                    logger.info(f"   📊 Extracted: {len(preprocess_result.get('metadata', {}).get('images', []))} images, {len(preprocess_result.get('metadata', {}).get('tables', []))} tables")
+                                    
+                                    # Optionally move original PDF to processed folder
+                                    processed_dir = file_path.parent / "__preprocessed_pdfs__"
+                                    processed_dir.mkdir(exist_ok=True)
+                                    try:
+                                        shutil.move(str(original_pdf_path), str(processed_dir / original_pdf_path.name))
+                                        logger.info(f"   📁 Moved original PDF to: {processed_dir.name}/")
+                                    except Exception as move_error:
+                                        logger.warning(f"   ⚠️  Could not move original PDF: {move_error}")
                                 else:
                                     raise Exception("Markdown file not found after preprocessing")
                             else:
                                 # Fallback to PyPDF2 if preprocessing fails
-                                logger.warning(f"Preprocessing failed for {file_path.name}, falling back to PyPDF2: {preprocess_result.get('error')}")
+                                logger.warning(f"⚠️  Preprocessing failed for {file_path.name}, falling back to PyPDF2: {preprocess_result.get('error')}")
                                 if not pm.is_installed("pypdf2"):  # type: ignore
                                     pm.install("pypdf2")
                                 from PyPDF2 import PdfReader  # type: ignore
