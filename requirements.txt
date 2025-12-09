@@ -19,3 +19,9 @@ aiofiles
 ollama
 langchain-ollama
 networkx
+pdfplumber
+PyMuPDF
+Pillow
+pytesseract
+markdownify
+pandas

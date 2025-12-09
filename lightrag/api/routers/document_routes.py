@@ -1192,7 +1192,33 @@ async def pipeline_enqueue_file(
 
                 case ".pdf":
                     try:
-                        if global_args.document_loading_engine == "DOCLING":
+                        # Try preprocessing module first for better quality
+                        if PREPROCESSING_AVAILABLE and global_args.document_loading_engine != "DOCLING":
+                            logger.info(f"Using preprocessing module for PDF: {file_path.name}")
+                            preprocess_result = await _run_pdf_preprocess(str(file_path), cleanup=False)
+                            
+                            if preprocess_result.get("success"):
+                                # Read the generated markdown file
+                                md_file = preprocess_result.get("markdown_file")
+                                if md_file and Path(md_file).exists():
+                                    async with aiofiles.open(md_file, "r", encoding="utf-8") as f:
+                                        content = await f.read()
+                                    logger.info(f"Successfully preprocessed PDF with {len(preprocess_result.get('metadata', {}).get('images', []))} images and {len(preprocess_result.get('metadata', {}).get('tables', []))} tables")
+                                else:
+                                    raise Exception("Markdown file not found after preprocessing")
+                            else:
+                                # Fallback to PyPDF2 if preprocessing fails
+                                logger.warning(f"Preprocessing failed for {file_path.name}, falling back to PyPDF2: {preprocess_result.get('error')}")
+                                if not pm.is_installed("pypdf2"):  # type: ignore
+                                    pm.install("pypdf2")
+                                from PyPDF2 import PdfReader  # type: ignore
+                                from io import BytesIO
+
+                                pdf_file = BytesIO(file)
+                                reader = PdfReader(pdf_file)
+                                for page in reader.pages:
+                                    content += page.extract_text() + "\n"
+                        elif global_args.document_loading_engine == "DOCLING":
                             if not pm.is_installed("docling"):  # type: ignore
                                 pm.install("docling")
                             from docling.document_converter import DocumentConverter  # type: ignore
@@ -1201,6 +1227,7 @@ async def pipeline_enqueue_file(
                             result = converter.convert(file_path)
                             content = result.document.export_to_markdown()
                         else:
+                            # Default PyPDF2 fallback
                             if not pm.is_installed("pypdf2"):  # type: ignore
                                 pm.install("pypdf2")
                             from PyPDF2 import PdfReader  # type: ignore
